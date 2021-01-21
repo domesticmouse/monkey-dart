@@ -277,7 +277,7 @@ MonkeyObject? applyFunction(MonkeyObject? function, List<MonkeyObject?> args) {
     var evaluated = eval(function.body, extendedEnv);
     return unwrapReturnValue(evaluated);
   } else if (function is Builtin) {
-    return function.fn(args);
+    return function.fn(args.cast<MonkeyObject>());
   } else {
     throw MonkeyError('not a function: ${function!.type}');
   }
