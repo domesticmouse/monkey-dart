@@ -50,15 +50,16 @@ class Token {
   };
 
   String type;
-  String literal;
+  String? literal;
 
   Token(this.type, this.literal);
 
+  @override
   bool operator ==(o) => o is Token && o.type == type && o.literal == literal;
 
   static String lookupIdent(String ident) {
-    String value = keywords[ident];
-    return value == null ? Token.IDENT : value;
+    var value = keywords[ident];
+    return value ?? Token.IDENT;
   }
 
   @override

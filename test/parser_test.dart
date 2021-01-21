@@ -17,18 +17,18 @@ void main() {
   });
 
   test('test identifier expression', () {
-    ExpressionStatement statement = parseExpressionStatement('foobar;');
+    var statement = parseExpressionStatement('foobar;');
 
     expect(statement.expression, isA<Identifier>());
-    Identifier ident = statement.expression;
+    var ident = statement.expression as Identifier;
 
     expect(ident.value, equals('foobar'));
     expect(ident.tokenLiteral(), equals('foobar'));
   });
 
   test('test literal integer expression', () {
-    ExpressionStatement statement = parseExpressionStatement('5;');
-    testIntegerLiteral(statement.expression, 5);
+    var statement = parseExpressionStatement('5;');
+    testIntegerLiteral(statement.expression!, 5);
   });
 
   test('test boolean expression', () {
@@ -105,47 +105,47 @@ void main() {
   });
 
   test('test if expression', () {
-    ExpressionStatement statement =
-        parseExpressionStatement('if (x < y) { x }');
+    var statement = parseExpressionStatement('if (x < y) { x }');
     expect(statement.expression, isA<IfExpression>());
-    IfExpression expression = statement.expression;
-    testInfixExpression(expression.condition, 'x', '<', 'y');
-    expect(expression.consequence.statements, hasLength(1));
-    ExpressionStatement consequence = expression.consequence.statements.first;
-    testIdentifier(consequence.expression, 'x');
+    var expression = statement.expression as IfExpression;
+    testInfixExpression(expression.condition!, 'x', '<', 'y');
+    expect(expression.consequence!.statements, hasLength(1));
+    var consequence =
+        expression.consequence!.statements.first as ExpressionStatement;
+    testIdentifier(consequence.expression!, 'x');
     expect(expression.alternative, isNull);
   });
 
   test('test if/else expression', () {
-    ExpressionStatement statement =
-        parseExpressionStatement('if (x < y) { x } else { y }');
+    var statement = parseExpressionStatement('if (x < y) { x } else { y }');
     expect(statement.expression, isA<IfExpression>());
-    IfExpression expression = statement.expression;
-    testInfixExpression(expression.condition, 'x', '<', 'y');
+    var expression = statement.expression as IfExpression;
+    testInfixExpression(expression.condition!, 'x', '<', 'y');
 
-    expect(expression.consequence.statements, hasLength(1));
-    ExpressionStatement consequence = expression.consequence.statements.first;
-    testIdentifier(consequence.expression, 'x');
+    expect(expression.consequence!.statements, hasLength(1));
+    var consequence =
+        expression.consequence!.statements.first as ExpressionStatement;
+    testIdentifier(consequence.expression!, 'x');
 
-    expect(expression.alternative.statements, hasLength(1));
-    ExpressionStatement alternative = expression.alternative.statements.first;
-    testIdentifier(alternative.expression, 'y');
+    expect(expression.alternative!.statements, hasLength(1));
+    var alternative =
+        expression.alternative!.statements.first as ExpressionStatement;
+    testIdentifier(alternative.expression!, 'y');
   });
 
   test('test function literal parsing', () {
-    ExpressionStatement statement =
-        parseExpressionStatement('fn(x, y) { x + y; }');
+    var statement = parseExpressionStatement('fn(x, y) { x + y; }');
     expect(statement.expression, isA<FunctionLiteral>());
-    FunctionLiteral function = statement.expression;
+    var function = statement.expression as FunctionLiteral;
 
     expect(function.parameters, hasLength(2));
-    testLiteralExpression(function.parameters[0], 'x');
-    testLiteralExpression(function.parameters[1], 'y');
+    testLiteralExpression(function.parameters![0], 'x');
+    testLiteralExpression(function.parameters![1], 'y');
 
-    expect(function.body.statements, hasLength(1));
-    expect(function.body.statements.first, isA<ExpressionStatement>());
-    ExpressionStatement body = function.body.statements.first;
-    testInfixExpression(body.expression, 'x', '+', 'y');
+    expect(function.body!.statements, hasLength(1));
+    expect(function.body!.statements.first, isA<ExpressionStatement>());
+    var body = function.body!.statements.first as ExpressionStatement;
+    testInfixExpression(body.expression!, 'x', '+', 'y');
   });
 
   test('test function parameter parsing', () {
@@ -155,74 +155,72 @@ void main() {
   });
 
   test('test call expression parsing', () {
-    ExpressionStatement statement =
-        parseExpressionStatement('add(1, 2 * 3, 4 + 5);');
+    var statement = parseExpressionStatement('add(1, 2 * 3, 4 + 5);');
     expect(statement.expression, isA<CallExpression>());
-    CallExpression call = statement.expression;
+    var call = statement.expression as CallExpression;
     testIdentifier(call.function, 'add');
     expect(call.arguments, hasLength(3));
-    testLiteralExpression(call.arguments[0], 1);
-    testInfixExpression(call.arguments[1], 2, '*', 3);
-    testInfixExpression(call.arguments[2], 4, '+', 5);
+    testLiteralExpression(call.arguments![0], 1);
+    testInfixExpression(call.arguments![1]!, 2, '*', 3);
+    testInfixExpression(call.arguments![2]!, 4, '+', 5);
   });
 
   test('test string literal expression parsing', () {
-    ExpressionStatement statement = parseExpressionStatement('"hello world"');
+    var statement = parseExpressionStatement('"hello world"');
     expect(statement.expression, isA<StringLiteral>());
-    StringLiteral literal = statement.expression;
+    var literal = statement.expression as StringLiteral;
     expect(literal.value, equals('hello world'));
   });
 
   test('test array literals parsing', () {
-    ExpressionStatement statement =
-        parseExpressionStatement('[1, 2 * 2, 3 + 3]');
+    var statement = parseExpressionStatement('[1, 2 * 2, 3 + 3]');
     expect(statement.expression, isA<ArrayLiteral>());
-    ArrayLiteral array = statement.expression;
+    var array = statement.expression as ArrayLiteral;
     expect(array.elements, hasLength(3));
-    testIntegerLiteral(array.elements[0], 1);
-    testInfixExpression(array.elements[1], 2, '*', 2);
-    testInfixExpression(array.elements[2], 3, '+', 3);
+    testIntegerLiteral(array.elements![0]!, 1);
+    testInfixExpression(array.elements![1]!, 2, '*', 2);
+    testInfixExpression(array.elements![2]!, 3, '+', 3);
   });
 
   test('test parsing index expressions', () {
-    ExpressionStatement statement = parseExpressionStatement('myArray[1 + 1]');
+    var statement = parseExpressionStatement('myArray[1 + 1]');
     expect(statement.expression, isA<IndexExpression>());
-    IndexExpression indexExpression = statement.expression;
-    testIdentifier(indexExpression.left, 'myArray');
-    testInfixExpression(indexExpression.index, 1, '+', 1);
+    var indexExpression = statement.expression as IndexExpression;
+    testIdentifier(indexExpression.left!, 'myArray');
+    testInfixExpression(indexExpression.index!, 1, '+', 1);
   });
 
   test('test parsing hash literal string keys', () {
-    ExpressionStatement statement =
+    var statement =
         parseExpressionStatement('{"one": 1, "two": 2, "three": 3}');
-    Map<String, int> expected = {"one": 1, "two": 2, "three": 3};
+    var expected = <String, int>{'one': 1, 'two': 2, 'three': 3};
     expect(statement.expression, isA<HashLiteral>());
-    HashLiteral hash = statement.expression;
+    var hash = statement.expression as HashLiteral;
     expect(hash.pairs, hasLength(3));
 
     hash.pairs.forEach((key, value) {
       expect(key, isA<StringLiteral>());
-      StringLiteral literal = key;
-      int expectedValue = expected[literal.toString()];
-      testIntegerLiteral(value, expectedValue);
+      var literal = key as StringLiteral?;
+      var expectedValue = expected[literal.toString()];
+      testIntegerLiteral(value!, expectedValue);
     });
   });
 
   test('test parsing empty hash literal', () {
-    ExpressionStatement statement = parseExpressionStatement('{}');
+    var statement = parseExpressionStatement('{}');
     expect(statement.expression, isA<HashLiteral>());
-    HashLiteral hash = statement.expression;
+    var hash = statement.expression as HashLiteral;
     expect(hash.pairs, isEmpty);
   });
 
   test('test parsing hash literal with expressions', () {
-    ExpressionStatement statement = parseExpressionStatement(
+    var statement = parseExpressionStatement(
         '{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}');
     expect(statement.expression, isA<HashLiteral>());
-    HashLiteral hash = statement.expression;
+    var hash = statement.expression as HashLiteral;
     expect(hash.pairs, hasLength(3));
 
-    Map<String, Function> testFunctions = {
+    var testFunctions = <String, Function>{
       'one': (Expression e) {
         testInfixExpression(e, 0, '+', 1);
       },
@@ -236,8 +234,8 @@ void main() {
 
     hash.pairs.forEach((key, value) {
       expect(key, isA<StringLiteral>());
-      StringLiteral literal = key;
-      testFunctions[literal.toString()](value);
+      var literal = key as StringLiteral?;
+      testFunctions[literal.toString()]!(value);
     });
   });
 
@@ -250,30 +248,30 @@ void main() {
 }
 
 void testParserError(String input) {
-  Parser parser = Parser(Lexer(input));
+  var parser = Parser(Lexer(input));
   parser.parseProgram();
   expect(parser.errors, isNotEmpty);
 }
 
 void testFunctionParameters(String input, List<String> expectedParameters) {
-  ExpressionStatement statement = parseExpressionStatement(input);
+  var statement = parseExpressionStatement(input);
   expect(statement.expression, isA<FunctionLiteral>());
-  FunctionLiteral function = statement.expression;
+  var function = statement.expression as FunctionLiteral;
 
   expect(function.parameters, hasLength(expectedParameters.length));
-  for (int i = 0; i < expectedParameters.length; i++) {
-    testIdentifier(function.parameters[i], expectedParameters[i]);
+  for (var i = 0; i < expectedParameters.length; i++) {
+    testIdentifier(function.parameters![i], expectedParameters[i]);
   }
 }
 
 void testBooleanParsing(String input, bool expected) {
-  ExpressionStatement statement = parseExpressionStatement(input);
-  testBooleanLiteral(statement.expression, expected);
+  var statement = parseExpressionStatement(input);
+  testBooleanLiteral(statement.expression!, expected);
 }
 
 void testLetStatementParsing(
     String input, String expectedIdentifier, Object expectedValue) {
-  Statement statement = parseSingleStatement(input);
+  var statement = parseSingleStatement(input);
   testLetStatement(statement, expectedIdentifier);
   testLiteralExpression((statement as LetStatement).value, expectedValue);
 }
@@ -281,83 +279,83 @@ void testLetStatementParsing(
 void testLetStatement(Statement statement, String name) {
   expect(statement.tokenLiteral(), equals('let'));
   expect(statement, isA<LetStatement>());
-  LetStatement letStatement = statement;
+  var letStatement = statement as LetStatement;
   expect(letStatement.name.value, equals(name));
   expect(letStatement.name.tokenLiteral(), equals(name));
 }
 
 void testReturnStatementParsing(String input, Object expectedValue) {
-  Statement statement = parseSingleStatement(input);
+  var statement = parseSingleStatement(input);
   expect(statement.tokenLiteral(), equals('return'));
   expect(statement, isA<ReturnStatement>());
-  ReturnStatement returnStatement = statement;
+  var returnStatement = statement as ReturnStatement;
   testLiteralExpression(returnStatement.returnValue, expectedValue);
 }
 
 Program parseProgramChecked(String input) {
-  Parser parser = Parser(Lexer(input));
-  Program program = parser.parseProgram();
+  var parser = Parser(Lexer(input));
+  var program = parser.parseProgram();
   checkParserErrors(parser);
   return program;
 }
 
 Statement parseSingleStatement(String input) {
-  Program program = parseProgramChecked(input);
+  var program = parseProgramChecked(input);
   expectNumStatements(program, 1);
-  return program.statements.first;
+  return program.statements!.first;
 }
 
 ExpressionStatement parseExpressionStatement(String input) {
-  Statement statement = parseSingleStatement(input);
+  var statement = parseSingleStatement(input);
   expect(statement, isA<ExpressionStatement>());
-  ExpressionStatement expressionStatement = statement;
+  var expressionStatement = statement as ExpressionStatement;
   return expressionStatement;
 }
 
 void testPrefix(String input, String operator, Object expectedValue) {
-  ExpressionStatement statement = parseExpressionStatement(input);
+  var statement = parseExpressionStatement(input);
   expect(statement.expression, isA<PrefixExpression>());
-  PrefixExpression expression = statement.expression;
+  var expression = statement.expression as PrefixExpression;
   expect(expression.operator, equals(operator));
   testLiteralExpression(expression.right, expectedValue);
 }
 
 void testInfix(
     String input, Object leftValue, String operator, Object rightValue) {
-  ExpressionStatement expressionStatement = parseExpressionStatement(input);
+  var expressionStatement = parseExpressionStatement(input);
   expect(expressionStatement.expression, isA<InfixExpression>());
-  InfixExpression expression = expressionStatement.expression;
+  var expression = expressionStatement.expression as InfixExpression;
   testLiteralExpression(expression.left, leftValue);
   expect(expression.operator, equals(operator));
   testLiteralExpression(expression.right, rightValue);
 }
 
 void testPrecedence(String input, String expected) {
-  Program program = parseProgramChecked(input);
+  var program = parseProgramChecked(input);
   expect(program.toString(), equals(expected));
 }
 
-void testIntegerLiteral(Expression expression, int integerValue) {
+void testIntegerLiteral(Expression expression, int? integerValue) {
   expect(expression, isA<IntegerLiteral>());
-  IntegerLiteral literal = expression;
+  var literal = expression as IntegerLiteral;
   expect(literal.value, equals(integerValue));
   expect(literal.tokenLiteral(), equals('$integerValue'));
 }
 
 void testIdentifier(Expression expression, String value) {
   expect(expression, isA<Identifier>());
-  Identifier identifier = expression;
+  var identifier = expression as Identifier;
   expect(identifier.value, equals(value));
   expect(identifier.tokenLiteral(), equals(value));
 }
 
-void testLiteralExpression(Expression expression, Object expected) {
+void testLiteralExpression(Expression? expression, Object expected) {
   if (expected is int) {
-    testIntegerLiteral(expression, expected);
+    testIntegerLiteral(expression!, expected);
   } else if (expected is String) {
-    testIdentifier(expression, expected);
+    testIdentifier(expression!, expected);
   } else if (expected is bool) {
-    testBooleanLiteral(expression, expected);
+    testBooleanLiteral(expression!, expected);
   } else {
     fail('type of expression not handled: ${expected.runtimeType}');
   }
@@ -365,7 +363,7 @@ void testLiteralExpression(Expression expression, Object expected) {
 
 void testBooleanLiteral(Expression expression, bool expected) {
   expect(expression, isA<BooleanLiteral>());
-  BooleanLiteral boolean = expression;
+  var boolean = expression as BooleanLiteral;
   expect(boolean.value, equals(expected));
   expect(boolean.tokenLiteral(), equals(expected.toString()));
 }
@@ -374,7 +372,7 @@ void testInfixExpression(
     Expression expression, Object left, String operator, Object right) {
   expect(expression, isA<InfixExpression>());
 
-  InfixExpression infixExpression = expression;
+  var infixExpression = expression as InfixExpression;
   testLiteralExpression(infixExpression.left, left);
   expect(infixExpression.operator, equals(operator));
   testLiteralExpression(infixExpression.right, right);

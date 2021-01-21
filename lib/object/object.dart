@@ -17,12 +17,12 @@ abstract class MonkeyObject {
 
   const MonkeyObject(this.type);
 
-  String inspect();
+  String? inspect();
 }
 
 class HashKey {
   String type;
-  int value;
+  int? value;
 
   HashKey(this.type, this.value);
 
@@ -31,9 +31,7 @@ class HashKey {
     if (identical(this, other)) {
       return true;
     }
-    return other is HashKey &&
-        this.type == other.type &&
-        this.value == other.value;
+    return other is HashKey && type == other.type && value == other.value;
   }
 
   @override
@@ -48,7 +46,7 @@ abstract class Hashable {
 
 class HashPair {
   MonkeyObject key;
-  MonkeyObject value;
+  MonkeyObject? value;
 
   HashPair(this.key, this.value);
 }
@@ -60,15 +58,15 @@ class Hash extends MonkeyObject {
 
   @override
   String inspect() {
-    String inspect = pairs.values
-        .map((pair) => '${pair.key.inspect()}:${pair.value.inspect()}')
+    var inspect = pairs.values
+        .map((pair) => '${pair.key.inspect()}:${pair.value!.inspect()}')
         .join(', ');
     return '{$inspect}';
   }
 }
 
 class MonkeyInteger extends MonkeyObject implements Hashable {
-  int value;
+  int? value;
 
   MonkeyInteger(this.value) : super(INTEGER_OBJ);
 
@@ -99,32 +97,32 @@ class MonkeyNull extends MonkeyObject {
 }
 
 class ReturnValue extends MonkeyObject {
-  final MonkeyObject value;
+  final MonkeyObject? value;
 
   const ReturnValue(this.value) : super(RETURN_VALUE_OBJ);
 
   @override
-  String inspect() => value.inspect();
+  String? inspect() => value!.inspect();
 }
 
 class MonkeyFunction extends MonkeyObject {
-  List<Identifier> parameters;
+  List<Identifier>? parameters;
   Environment env;
-  BlockStatement body;
+  BlockStatement? body;
 
   MonkeyFunction(this.parameters, this.env, this.body) : super(FUNCTION_OBJ);
 
   @override
-  String inspect() => 'fn(${parameters.join(', ')}) {\n$body\n}';
+  String inspect() => 'fn(${parameters!.join(', ')}) {\n$body\n}';
 }
 
 class MonkeyString extends MonkeyObject implements Hashable {
-  final String value;
+  final String? value;
 
   MonkeyString(this.value) : super(STRING_OBJ);
 
   @override
-  String inspect() => value;
+  String? inspect() => value;
 
   @override
   HashKey hashKey() => HashKey(type, value.hashCode);
@@ -140,13 +138,13 @@ class Builtin extends MonkeyObject {
 }
 
 class MonkeyArray extends MonkeyObject {
-  final List<MonkeyObject> elements;
+  final List<MonkeyObject?> elements;
 
   const MonkeyArray(this.elements) : super(ARRAY_OBJ);
 
   @override
   String inspect() =>
-      '[${elements.map((object) => object.inspect()).join(', ')}]';
+      '[${elements.map((object) => object!.inspect()).join(', ')}]';
 }
 
 class MonkeyError extends Error {
@@ -154,5 +152,6 @@ class MonkeyError extends Error {
 
   MonkeyError(this.message);
 
+  @override
   String toString() => 'ERROR: $message';
 }

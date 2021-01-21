@@ -9,9 +9,9 @@ final Map<String, Builtin> builtins = {
           'wrong number of arguments. got=${args.length}, want=1');
     }
 
-    MonkeyObject arg = args.first;
+    var arg = args.first;
     if (arg is MonkeyString) {
-      return MonkeyInteger(arg.value.length);
+      return MonkeyInteger(arg.value!.length);
     } else if (arg is MonkeyArray) {
       return MonkeyInteger(arg.elements.length);
     }
@@ -24,12 +24,12 @@ final Map<String, Builtin> builtins = {
           'wrong number of arguments. got=${args.length}, want=1');
     }
 
-    MonkeyObject arg = args.first;
+    var arg = args.first;
     if (arg.type != ARRAY_OBJ) {
       throw MonkeyError('argument to `first` must be ARRAY, got ${arg.type}');
     }
 
-    MonkeyArray array = arg;
+    var array = arg as MonkeyArray;
     if (array.elements.isNotEmpty) {
       return array.elements.first;
     }
@@ -42,12 +42,12 @@ final Map<String, Builtin> builtins = {
           'wrong number of arguments. got=${args.length}, want=1');
     }
 
-    MonkeyObject arg = args.first;
+    var arg = args.first;
     if (arg.type != ARRAY_OBJ) {
       throw MonkeyError('argument to `last` must be ARRAY, got ${arg.type}');
     }
 
-    MonkeyArray array = arg;
+    var array = arg as MonkeyArray;
     if (array.elements.isNotEmpty) {
       return array.elements.last;
     }
@@ -60,12 +60,12 @@ final Map<String, Builtin> builtins = {
           'wrong number of arguments. got=${args.length}, want=1');
     }
 
-    MonkeyObject arg = args.first;
+    var arg = args.first;
     if (arg.type != ARRAY_OBJ) {
       throw MonkeyError('argument to `rest` must be ARRAY, got ${arg.type}');
     }
 
-    MonkeyArray array = arg;
+    var array = arg as MonkeyArray;
     if (array.elements.isNotEmpty) {
       return MonkeyArray(array.elements.sublist(1));
     }
@@ -83,7 +83,7 @@ final Map<String, Builtin> builtins = {
           'argument to `push` must be ARRAY, got ${args.first.type}');
     }
 
-    MonkeyArray array = args.first;
+    var array = args.first as MonkeyArray;
     return MonkeyArray(List<MonkeyObject>.from(array.elements)..add(args[1]));
   }),
   'puts': Builtin((List<MonkeyObject> args) {

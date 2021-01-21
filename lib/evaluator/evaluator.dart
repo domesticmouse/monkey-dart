@@ -7,7 +7,7 @@ const MonkeyNull NULL = MonkeyNull();
 const MonkeyBoolean TRUE = MonkeyBoolean(true);
 const MonkeyBoolean FALSE = MonkeyBoolean(false);
 
-MonkeyObject eval(Node node, Environment env) {
+MonkeyObject? eval(Node? node, Environment env) {
   if (node is Program) {
     return evalProgram(node, env);
   } else if (node is ExpressionStatement) {
@@ -19,7 +19,7 @@ MonkeyObject eval(Node node, Environment env) {
   } else if (node is PrefixExpression) {
     return evalPrefixExpression(node.operator, eval(node.right, env));
   } else if (node is InfixExpression) {
-    var left = eval(node.left, env);
+    var left = eval(node.left, env)!;
     var right = eval(node.right, env);
     return evalInfixExpression(node.operator, left, right);
   } else if (node is BlockStatement) {
@@ -37,17 +37,17 @@ MonkeyObject eval(Node node, Environment env) {
   } else if (node is FunctionLiteral) {
     return MonkeyFunction(node.parameters, env, node.body);
   } else if (node is CallExpression) {
-    MonkeyObject function = eval(node.function, env);
-    List<MonkeyObject> args = evalExpressions(node.arguments, env);
+    var function = eval(node.function, env);
+    var args = evalExpressions(node.arguments!, env);
     return applyFunction(function, args);
   } else if (node is StringLiteral) {
     return MonkeyString(node.value);
   } else if (node is ArrayLiteral) {
-    List<MonkeyObject> elements = evalExpressions(node.elements, env);
+    var elements = evalExpressions(node.elements!, env);
     return MonkeyArray(elements);
   } else if (node is IndexExpression) {
-    MonkeyObject left = eval(node.left, env);
-    MonkeyObject index = eval(node.index, env);
+    var left = eval(node.left, env)!;
+    var index = eval(node.index, env);
     return evalIndexExpression(left, index);
   } else if (node is HashLiteral) {
     return evalHashLiteral(node, env);
@@ -56,53 +56,54 @@ MonkeyObject eval(Node node, Environment env) {
 }
 
 MonkeyObject evalHashLiteral(HashLiteral node, Environment env) {
-  Hash hash = Hash();
+  var hash = Hash();
 
-  for (Expression keyNode in node.pairs.keys) {
-    MonkeyObject key = eval(keyNode, env);
+  for (var keyNode in node.pairs.keys) {
+    var key = eval(keyNode, env)!;
     if (key is! Hashable) {
       throw MonkeyError('unusable as hash key: ${key.type}');
     }
-    Hashable hashable = key as Hashable;
+    var hashable = key as Hashable;
 
-    MonkeyObject value = eval(node.pairs[keyNode], env);
+    var value = eval(node.pairs[keyNode], env);
     hash.pairs[hashable.hashKey()] = HashPair(key, value);
   }
   return hash;
 }
 
-MonkeyObject evalIndexExpression(MonkeyObject left, MonkeyObject index) {
-  if (left.type == ARRAY_OBJ && index.type == INTEGER_OBJ) {
-    return evalArrayIndexExpression(left, index);
+MonkeyObject? evalIndexExpression(MonkeyObject left, MonkeyObject? index) {
+  if (left.type == ARRAY_OBJ && index!.type == INTEGER_OBJ) {
+    return evalArrayIndexExpression(
+        left as MonkeyArray, index as MonkeyInteger);
   } else if (left.type == HASH_OBJ) {
-    return evalHashIndexExpression(left, index);
+    return evalHashIndexExpression(left as Hash, index!);
   } else {
     throw MonkeyError('index operator not supported: ${left.type}');
   }
 }
 
-MonkeyObject evalArrayIndexExpression(MonkeyArray array, MonkeyInteger index) {
-  int idx = index.value;
-  int max = array.elements.length - 1;
-  bool outOfRange = idx < 0 || idx > max;
+MonkeyObject? evalArrayIndexExpression(MonkeyArray array, MonkeyInteger index) {
+  var idx = index.value!;
+  var max = array.elements.length - 1;
+  var outOfRange = idx < 0 || idx > max;
   return outOfRange ? NULL : array.elements[idx];
 }
 
-MonkeyObject evalHashIndexExpression(Hash hash, MonkeyObject index) {
+MonkeyObject? evalHashIndexExpression(Hash hash, MonkeyObject index) {
   if (index is! Hashable) {
     throw MonkeyError('unusable as hash key: ${index.type}');
   }
-  HashPair pair = hash.pairs[(index as Hashable).hashKey()];
+  var pair = hash.pairs[(index as Hashable).hashKey()];
   return pair == null ? NULL : pair.value;
 }
 
 MonkeyObject evalIdentifier(Identifier node, Environment env) {
-  MonkeyObject value = env.get(node.value);
+  var value = env.get(node.value);
   if (value != null) {
     return value;
   }
 
-  Builtin builtin = builtins[node.value];
+  var builtin = builtins[node.value!];
   if (builtin != null) {
     return builtin;
   }
@@ -110,20 +111,20 @@ MonkeyObject evalIdentifier(Identifier node, Environment env) {
   throw MonkeyError('identifier not found: ${node.value}');
 }
 
-List<MonkeyObject> evalExpressions(
-    List<Expression> expressions, Environment env) {
-  List<MonkeyObject> result = [];
-  for (int i = 0; i < expressions.length; i++) {
-    MonkeyObject evaluated = eval(expressions[i], env);
+List<MonkeyObject?> evalExpressions(
+    List<Expression?> expressions, Environment env) {
+  var result = <MonkeyObject?>[];
+  for (var i = 0; i < expressions.length; i++) {
+    var evaluated = eval(expressions[i], env);
     result.add(evaluated);
   }
   return result;
 }
 
-MonkeyObject evalProgram(Program program, Environment env) {
-  MonkeyObject result;
-  for (int i = 0; i < program.statements.length; i++) {
-    result = eval(program.statements[i], env);
+MonkeyObject? evalProgram(Program program, Environment env) {
+  MonkeyObject? result;
+  for (var i = 0; i < program.statements!.length; i++) {
+    result = eval(program.statements![i], env);
     if (result is ReturnValue) {
       return result.value;
     } else if (result is MonkeyError) {
@@ -133,9 +134,9 @@ MonkeyObject evalProgram(Program program, Environment env) {
   return result;
 }
 
-MonkeyObject evalBlockStatement(BlockStatement block, Environment env) {
-  MonkeyObject result;
-  for (int i = 0; i < block.statements.length; i++) {
+MonkeyObject? evalBlockStatement(BlockStatement block, Environment env) {
+  MonkeyObject? result;
+  for (var i = 0; i < block.statements.length; i++) {
     result = eval(block.statements[i], env);
     if (result != null) {
       if (result.type == RETURN_VALUE_OBJ || result.type == ERROR_OBJ) {
@@ -146,8 +147,8 @@ MonkeyObject evalBlockStatement(BlockStatement block, Environment env) {
   return result;
 }
 
-MonkeyObject evalIfExpression(IfExpression expression, Environment env) {
-  MonkeyObject condition = eval(expression.condition, env);
+MonkeyObject? evalIfExpression(IfExpression expression, Environment env) {
+  var condition = eval(expression.condition, env);
 
   if (isTruthy(condition)) {
     return eval(expression.consequence, env);
@@ -158,7 +159,7 @@ MonkeyObject evalIfExpression(IfExpression expression, Environment env) {
   }
 }
 
-bool isTruthy(MonkeyObject condition) {
+bool isTruthy(MonkeyObject? condition) {
   if (condition == NULL) {
     return false;
   } else if (condition == TRUE) {
@@ -171,16 +172,18 @@ bool isTruthy(MonkeyObject condition) {
 }
 
 MonkeyObject evalInfixExpression(
-    String operator, MonkeyObject left, MonkeyObject right) {
-  if (left.type == INTEGER_OBJ && right.type == INTEGER_OBJ) {
-    return evalIntegerInfixExpression(operator, left, right);
-  } else if (left.type == STRING_OBJ && right.type == STRING_OBJ) {
-    return evalStringInfixExpression(operator, left, right);
+    String? operator, MonkeyObject left, MonkeyObject? right) {
+  if (left.type == INTEGER_OBJ && right!.type == INTEGER_OBJ) {
+    return evalIntegerInfixExpression(
+        operator, left as MonkeyInteger, right as MonkeyInteger?);
+  } else if (left.type == STRING_OBJ && right!.type == STRING_OBJ) {
+    return evalStringInfixExpression(
+        operator, left as MonkeyString, right as MonkeyString?);
   } else if (operator == '==') {
     return nativeBoolToBooleanObject(left == right);
   } else if (operator == '!=') {
     return nativeBoolToBooleanObject(left != right);
-  } else if (left.type != right.type) {
+  } else if (left.type != right!.type) {
     throw MonkeyError('type mismatch: ${left.type} '
         '$operator ${right.type}');
   } else {
@@ -190,53 +193,53 @@ MonkeyObject evalInfixExpression(
 }
 
 MonkeyObject evalIntegerInfixExpression(
-    String operator, MonkeyInteger left, MonkeyInteger right) {
+    String? operator, MonkeyInteger left, MonkeyInteger? right) {
   switch (operator) {
     case '+':
-      return MonkeyInteger(left.value + right.value);
+      return MonkeyInteger(left.value! + right!.value!);
     case '-':
-      return MonkeyInteger(left.value - right.value);
+      return MonkeyInteger(left.value! - right!.value!);
     case '*':
-      return MonkeyInteger(left.value * right.value);
+      return MonkeyInteger(left.value! * right!.value!);
     case '/':
-      return MonkeyInteger(left.value ~/ right.value);
+      return MonkeyInteger(left.value! ~/ right!.value!);
     case '<':
-      return nativeBoolToBooleanObject(left.value < right.value);
+      return nativeBoolToBooleanObject(left.value! < right!.value!);
     case '>':
-      return nativeBoolToBooleanObject(left.value > right.value);
+      return nativeBoolToBooleanObject(left.value! > right!.value!);
     case '==':
-      return nativeBoolToBooleanObject(left.value == right.value);
+      return nativeBoolToBooleanObject(left.value == right!.value);
     case '!=':
-      return nativeBoolToBooleanObject(left.value != right.value);
+      return nativeBoolToBooleanObject(left.value != right!.value);
     default:
       throw MonkeyError('unknown operator: ${left.type} '
-          '$operator ${right.type}');
+          '$operator ${right!.type}');
   }
 }
 
 MonkeyObject evalStringInfixExpression(
-    String operator, MonkeyString left, MonkeyString right) {
+    String? operator, MonkeyString left, MonkeyString? right) {
   switch (operator) {
     case '+':
-      return MonkeyString(left.value + right.value);
+      return MonkeyString(left.value! + right!.value!);
     default:
       throw MonkeyError('unknown operator: ${left.type} '
-          '$operator ${right.type}');
+          '$operator ${right!.type}');
   }
 }
 
-MonkeyObject evalPrefixExpression(String operator, MonkeyObject right) {
+MonkeyObject evalPrefixExpression(String? operator, MonkeyObject? right) {
   switch (operator) {
     case '!':
       return evalBangOperatorExpression(right);
     case '-':
-      return evalMinusPrefixOperatorExpression(right);
+      return evalMinusPrefixOperatorExpression(right!);
     default:
-      throw MonkeyError('unknown operator: $operator${right.type}');
+      throw MonkeyError('unknown operator: $operator${right!.type}');
   }
 }
 
-MonkeyObject evalBangOperatorExpression(MonkeyObject right) {
+MonkeyObject evalBangOperatorExpression(MonkeyObject? right) {
   if (right == TRUE) {
     return FALSE;
   } else if (right == FALSE) {
@@ -252,14 +255,14 @@ MonkeyObject evalMinusPrefixOperatorExpression(MonkeyObject right) {
   if (right.type != INTEGER_OBJ) {
     throw MonkeyError('unknown operator: -${right.type}');
   }
-  return MonkeyInteger(-(right as MonkeyInteger).value);
+  return MonkeyInteger(-(right as MonkeyInteger).value!);
 }
 
 MonkeyBoolean nativeBoolToBooleanObject(bool value) => value ? TRUE : FALSE;
 
-MonkeyObject evalStatements(List<Statement> statements, Environment env) {
-  MonkeyObject result;
-  for (int i = 0; i < statements.length; i++) {
+MonkeyObject? evalStatements(List<Statement> statements, Environment env) {
+  MonkeyObject? result;
+  for (var i = 0; i < statements.length; i++) {
     result = eval(statements[i], env);
     if (result is ReturnValue) {
       return result.value;
@@ -268,27 +271,27 @@ MonkeyObject evalStatements(List<Statement> statements, Environment env) {
   return result;
 }
 
-MonkeyObject applyFunction(MonkeyObject function, List<MonkeyObject> args) {
+MonkeyObject? applyFunction(MonkeyObject? function, List<MonkeyObject?> args) {
   if (function is MonkeyFunction) {
-    Environment extendedEnv = extendFunctionEnv(function, args);
-    MonkeyObject evaluated = eval(function.body, extendedEnv);
+    var extendedEnv = extendFunctionEnv(function, args);
+    var evaluated = eval(function.body, extendedEnv);
     return unwrapReturnValue(evaluated);
   } else if (function is Builtin) {
     return function.fn(args);
   } else {
-    throw MonkeyError('not a function: ${function.type}');
+    throw MonkeyError('not a function: ${function!.type}');
   }
 }
 
 Environment extendFunctionEnv(
-    MonkeyFunction function, List<MonkeyObject> args) {
-  Environment env = Environment.enclosedEnvironment(function.env);
-  for (int i = 0; i < function.parameters.length; i++) {
-    env.set(function.parameters[i].value, args[i]);
+    MonkeyFunction function, List<MonkeyObject?> args) {
+  var env = Environment.enclosedEnvironment(function.env);
+  for (var i = 0; i < function.parameters!.length; i++) {
+    env.set(function.parameters![i].value, args[i]);
   }
   return env;
 }
 
-MonkeyObject unwrapReturnValue(MonkeyObject object) {
+MonkeyObject? unwrapReturnValue(MonkeyObject? object) {
   return object is ReturnValue ? object.value : object;
 }

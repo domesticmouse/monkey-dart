@@ -108,12 +108,12 @@ void main() {
   });
 
   test('test function object', () {
-    MonkeyObject evaluated = testEval('fn(x) { x + 2; };');
+    var evaluated = testEval('fn(x) { x + 2; };')!;
     expect(evaluated, isA<MonkeyFunction>());
-    MonkeyFunction function = evaluated;
+    var function = evaluated as MonkeyFunction;
 
     expect(function.parameters, hasLength(1));
-    expect(function.parameters.first.toString(), equals('x'));
+    expect(function.parameters!.first.toString(), equals('x'));
     expect(function.body.toString(), equals('(x + 2)'));
   });
 
@@ -138,16 +138,16 @@ void main() {
   });
 
   test('test string literal', () {
-    MonkeyObject evaluated = testEval('"Hello World!"');
+    var evaluated = testEval('"Hello World!"')!;
     expect(evaluated, isA<MonkeyString>());
-    MonkeyString string = evaluated;
+    var string = evaluated as MonkeyString;
     expect(string.value, equals('Hello World!'));
   });
 
   test('test string concatenation', () {
-    MonkeyObject evaluated = testEval('"Hello" + " " + "World!"');
+    var evaluated = testEval('"Hello" + " " + "World!"')!;
     expect(evaluated, isA<MonkeyString>());
-    MonkeyString string = evaluated;
+    var string = evaluated as MonkeyString;
     expect(string.value, equals('Hello World!'));
   });
 
@@ -157,7 +157,7 @@ void main() {
     testBuiltin('len("hello world")', 11);
     testBuiltin('len(1)', 'argument to `len` not supported, got INTEGER');
     testBuiltin(
-        'len("one", "two")', "wrong number of arguments. got=2, want=1");
+        'len("one", "two")', 'wrong number of arguments. got=2, want=1');
     testBuiltin('len([1, 2, 3])', 3);
     testBuiltin('len([])', 0);
     testBuiltin('puts("hello", "world!")', null);
@@ -174,13 +174,13 @@ void main() {
   });
 
   test('test array literals', () {
-    MonkeyObject evaluated = testEval('[1, 2 * 2, 3 + 3]');
+    var evaluated = testEval('[1, 2 * 2, 3 + 3]')!;
     expect(evaluated, isA<MonkeyArray>());
-    MonkeyArray array = evaluated;
+    var array = evaluated as MonkeyArray;
     expect(array.elements, hasLength(3));
-    testIntegerObject(array.elements[0], 1);
-    testIntegerObject(array.elements[1], 4);
-    testIntegerObject(array.elements[2], 6);
+    testIntegerObject(array.elements[0]!, 1);
+    testIntegerObject(array.elements[1]!, 4);
+    testIntegerObject(array.elements[2]!, 6);
   });
 
   test('test array index expressions', () {
@@ -199,7 +199,7 @@ void main() {
   });
 
   test('test hash literals', () {
-    MonkeyObject evaluated = testEval("""
+    var evaluated = testEval('''
       let two = "two";
       {
         "one": 10 - 9,
@@ -209,10 +209,10 @@ void main() {
         true: 5,
         false: 6
       }
-    """);
+    ''')!;
     expect(evaluated, isA<Hash>());
-    Hash hash = evaluated;
-    Map<HashKey, int> expected = {
+    var hash = evaluated as Hash;
+    var expected = <HashKey, int>{
       MonkeyString('one').hashKey(): 1,
       MonkeyString('two').hashKey(): 2,
       MonkeyString('three').hashKey(): 3,
@@ -222,9 +222,9 @@ void main() {
     };
     expect(hash.pairs, hasLength(expected.length));
     expected.forEach((HashKey expectedKey, int expectedValue) {
-      HashPair pair = hash.pairs[expectedKey];
+      var pair = hash.pairs[expectedKey]!;
       expect(pair, isNotNull);
-      testIntegerObject(pair.value, expectedValue);
+      testIntegerObject(pair.value!, expectedValue);
     });
   });
 
@@ -239,23 +239,23 @@ void main() {
   });
 }
 
-void testBuiltin(String input, Object expected) {
+void testBuiltin(String input, Object? expected) {
   if (expected is String) {
     expect(() => testEval(input), throwsMonkeyError(expected));
     return;
   }
 
-  MonkeyObject evaluated = testEval(input);
+  var evaluated = testEval(input);
   if (expected is int) {
-    testIntegerObject(evaluated, expected);
+    testIntegerObject(evaluated!, expected);
   } else if (expected == null) {
     testNullObject(evaluated);
   } else if (expected is List<int>) {
     expect(evaluated, isA<MonkeyArray>());
-    MonkeyArray array = evaluated;
+    var array = evaluated as MonkeyArray;
     expect(array.elements, hasLength(expected.length));
-    for (int i = 0; i < expected.length; i++) {
-      testIntegerObject(array.elements[i], expected[i]);
+    for (var i = 0; i < expected.length; i++) {
+      testIntegerObject(array.elements[i]!, expected[i]);
     }
   } else {
     fail('unsupported test type: ${expected.runtimeType}');
@@ -263,31 +263,31 @@ void testBuiltin(String input, Object expected) {
 }
 
 void testEvalInteger(String input, int expected) {
-  MonkeyObject evaluated = testEval(input);
+  var evaluated = testEval(input)!;
   testIntegerObject(evaluated, expected);
 }
 
 void testEvalBoolean(String input, bool expected) {
-  MonkeyObject evaluated = testEval(input);
+  var evaluated = testEval(input)!;
   testBooleanObject(evaluated, expected);
 }
 
 void testBangOperator(String input, bool expected) {
-  MonkeyObject evaluated = testEval(input);
+  var evaluated = testEval(input)!;
   testBooleanObject(evaluated, expected);
 }
 
-void testIfElse(String input, Object expected) {
-  MonkeyObject evaluated = testEval(input);
+void testIfElse(String input, Object? expected) {
+  var evaluated = testEval(input);
   if (expected is int) {
-    testIntegerObject(evaluated, expected);
+    testIntegerObject(evaluated!, expected);
   } else {
     testNullObject(evaluated);
   }
 }
 
 void testReturnStatement(String input, int expected) {
-  MonkeyObject evaluated = testEval(input);
+  var evaluated = testEval(input)!;
   testIntegerObject(evaluated, expected);
 }
 
@@ -295,44 +295,44 @@ void testErrorHandling(String input, String expectedMessage) {
   expect(() => testEval(input), throwsMonkeyError(expectedMessage));
 }
 
-Matcher throwsMonkeyError(String expectedMessage) =>
-    throwsA(predicate((e) => e is MonkeyError && e.message == expectedMessage));
+Matcher throwsMonkeyError(String expectedMessage) => throwsA(
+    predicate((dynamic e) => e is MonkeyError && e.message == expectedMessage));
 
-void testArrayIndex(String input, Object expected) {
-  MonkeyObject evaluated = testEval(input);
+void testArrayIndex(String input, Object? expected) {
+  var evaluated = testEval(input);
   if (expected is int) {
-    testIntegerObject(evaluated, expected);
+    testIntegerObject(evaluated!, expected);
   } else {
     testNullObject(evaluated);
   }
 }
 
-void testHashIndex(String input, Object expected) {
-  MonkeyObject evaluated = testEval(input);
+void testHashIndex(String input, Object? expected) {
+  var evaluated = testEval(input);
   if (expected is int) {
-    testIntegerObject(evaluated, expected);
+    testIntegerObject(evaluated!, expected);
   } else {
     testNullObject(evaluated);
   }
 }
 
-void testNullObject(MonkeyObject object) {
+void testNullObject(MonkeyObject? object) {
   expect(object, equals(NULL));
 }
 
 void testIntegerObject(MonkeyObject object, int expected) {
   expect(object, isA<MonkeyInteger>());
-  MonkeyInteger integer = object;
+  var integer = object as MonkeyInteger;
   expect(integer.value, equals(expected));
 }
 
 void testBooleanObject(MonkeyObject object, bool expected) {
   expect(object, isA<MonkeyBoolean>());
-  MonkeyBoolean boolean = object;
+  var boolean = object as MonkeyBoolean;
   expect(boolean.value, equals(expected));
 }
 
-MonkeyObject testEval(String input) {
-  Parser parser = Parser(Lexer(input));
+MonkeyObject? testEval(String input) {
+  var parser = Parser(Lexer(input));
   return eval(parser.parseProgram(), Environment.freshEnvironment());
 }

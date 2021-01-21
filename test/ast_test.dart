@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('test program.toString()', () {
-    Program program = Program()
+    var program = Program()
       ..statements = [
         LetStatement(Token(Token.LET, 'let'))
           ..name = ident('myVar')

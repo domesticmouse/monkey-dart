@@ -10,7 +10,7 @@ class Lexer {
   int readPosition = 0;
 
   /// current char under examination
-  String ch;
+  String? ch;
 
   Lexer(this.input) {
     readChar();
@@ -36,9 +36,9 @@ class Lexer {
       switch (ch) {
         case '=':
           if (peekChar() == '=') {
-            String temp = ch;
+            var temp = ch!;
             readChar();
-            token = Token(Token.EQ, temp + ch);
+            token = Token(Token.EQ, temp + ch!);
           } else {
             token = Token(Token.ASSIGN, ch);
           }
@@ -63,9 +63,9 @@ class Lexer {
           break;
         case '!':
           if (peekChar() == '=') {
-            String temp = ch;
+            var temp = ch!;
             readChar();
-            token = Token(Token.NOT_EQ, temp + ch);
+            token = Token(Token.NOT_EQ, temp + ch!);
           } else {
             token = Token(Token.BANG, ch);
           }
@@ -102,7 +102,7 @@ class Lexer {
           break;
         default:
           if (isLetter(ch)) {
-            String ident = readIdentifier();
+            var ident = readIdentifier();
             return Token(Token.lookupIdent(ident), ident);
           } else if (isDigit(ch)) {
             return Token(Token.INT, readNumber());
@@ -139,32 +139,32 @@ class Lexer {
   static final int zero = code('0');
   static final int nine = code('9');
 
-  bool isDigit(String ch) {
+  bool isDigit(String? ch) {
     if (ch == null) {
       return false;
     }
-    int c = ch.codeUnitAt(0);
+    var c = ch.codeUnitAt(0);
     return c >= zero && c <= nine;
   }
 
-  bool isWhitespace(String ch) {
+  bool isWhitespace(String? ch) {
     if (ch == null) {
       return false;
     }
-    int c = ch.codeUnitAt(0);
+    var c = ch.codeUnitAt(0);
     return c == space || c == tab || c == newline || c == carriage;
   }
 
-  static bool isLetter(String ch) {
+  static bool isLetter(String? ch) {
     if (ch == null) {
       return false;
     }
-    int c = ch.codeUnitAt(0);
+    var c = ch.codeUnitAt(0);
     return a <= c && c <= z || A <= c && c <= Z || c == _;
   }
 
   String readIdentifier() {
-    int firstPosition = position;
+    var firstPosition = position;
     while (isLetter(ch)) {
       readChar();
     }
@@ -172,7 +172,7 @@ class Lexer {
   }
 
   String readNumber() {
-    int firstPosition = position;
+    var firstPosition = position;
     while (isDigit(ch)) {
       readChar();
     }
@@ -180,7 +180,7 @@ class Lexer {
   }
 
   String readString() {
-    int firstPosition = position + 1;
+    var firstPosition = position + 1;
     while (true) {
       readChar();
       if (ch == '"') {
@@ -190,7 +190,7 @@ class Lexer {
     return input.substring(firstPosition, position);
   }
 
-  String peekChar() {
+  String? peekChar() {
     if (readPosition >= input.length) {
       return null;
     } else {

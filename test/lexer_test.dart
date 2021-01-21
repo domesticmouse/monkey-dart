@@ -7,10 +7,10 @@ Token t(String tokenType, String literal) {
 }
 
 void testLexer(List<Token> expected, String input) {
-  Lexer lexer = Lexer(input);
-  for (int i = 0; i < expected.length; i++) {
-    Token expectedToken = expected[i];
-    Token actualToken = lexer.nextToken();
+  var lexer = Lexer(input);
+  for (var i = 0; i < expected.length; i++) {
+    var expectedToken = expected[i];
+    var actualToken = lexer.nextToken();
     print('${actualToken.literal} ');
     expect(actualToken.type, expectedToken.type,
         reason: 'tests[$i] - tokentype wrong');
@@ -21,8 +21,8 @@ void testLexer(List<Token> expected, String input) {
 
 void main() {
   test('test lexer with input =+(){},;', () {
-    String input = '=+(){},;';
-    List<Token> expected = [
+    var input = '=+(){},;';
+    var expected = <Token>[
       t(Token.ASSIGN, '='),
       t(Token.PLUS, '+'),
       t(Token.LPAREN, '('),
@@ -38,7 +38,7 @@ void main() {
   });
 
   test('test monkey language tokens', () {
-    String input = """
+    var input = '''
       let five = 5;
       let ten = 10;
 
@@ -62,8 +62,8 @@ void main() {
       "foo bar"
       [1, 2];
       {"foo": "bar"}
-    """;
-    List<Token> expected = [
+    ''';
+    var expected = <Token>[
       t(Token.LET, 'let'),
       t(Token.IDENT, 'five'),
       t(Token.ASSIGN, '='),

@@ -1,93 +1,94 @@
 import 'package:monkey_lang/token/token.dart';
 
 abstract class Node {
-  String tokenLiteral();
+  String? tokenLiteral();
 }
 
 abstract class Statement extends Node {
-  Token token;
+  Token? token;
 
   Statement(this.token);
 
   @override
-  String tokenLiteral() => token.literal;
+  String? tokenLiteral() => token!.literal;
 }
 
 abstract class Expression extends Node {
-  Token token;
+  Token? token;
 
   Expression(this.token);
 
   @override
-  String tokenLiteral() => token.literal;
+  String? tokenLiteral() => token!.literal;
 }
 
 class Program extends Node {
-  List<Statement> statements;
+  List<Statement>? statements;
 
+  @override
   String tokenLiteral() {
-    return statements.isEmpty ? '' : statements.first.tokenLiteral;
+    return statements!.isEmpty ? '' : statements!.first.tokenLiteral as String;
   }
 
   @override
   String toString() {
-    StringBuffer sb = StringBuffer();
-    statements.forEach((statement) => sb.write(statement));
+    var sb = StringBuffer();
+    statements!.forEach((statement) => sb.write(statement));
     return sb.toString();
   }
 }
 
 class Identifier extends Expression {
-  String value;
+  String? value;
 
-  Identifier(Token token, this.value) : super(token);
+  Identifier(Token? token, this.value) : super(token);
 
   @override
-  String toString() => value;
+  String toString() => value!;
 }
 
 class LetStatement extends Statement {
-  Identifier name;
-  Expression value;
+  late Identifier name;
+  Expression? value;
 
-  LetStatement(Token token) : super(token);
+  LetStatement(Token? token) : super(token);
 
   @override
   String toString() => '${tokenLiteral()} $name = ${value ?? ''};';
 }
 
 class ReturnStatement extends Statement {
-  Expression returnValue;
+  Expression? returnValue;
 
-  ReturnStatement(Token token) : super(token);
+  ReturnStatement(Token? token) : super(token);
 
   @override
   String toString() => '${tokenLiteral()} ${returnValue ?? ''};';
 }
 
 class ExpressionStatement extends Statement {
-  Expression expression;
+  Expression? expression;
 
-  ExpressionStatement(Token token) : super(token);
+  ExpressionStatement(Token? token) : super(token);
 
   @override
   String toString() => '${expression ?? ''}';
 }
 
 class IntegerLiteral extends Expression {
-  int value;
+  int? value;
 
-  IntegerLiteral(Token token) : super(token);
+  IntegerLiteral(Token? token) : super(token);
 
   @override
-  String toString() => token.literal;
+  String toString() => token!.literal!;
 }
 
 class PrefixExpression extends Expression {
-  String operator;
-  Expression right;
+  String? operator;
+  Expression? right;
 
-  PrefixExpression(Token token, this.operator) : super(token);
+  PrefixExpression(Token? token, this.operator) : super(token);
 
   @override
   String toString() => '($operator$right)';
@@ -95,10 +96,10 @@ class PrefixExpression extends Expression {
 
 class InfixExpression extends Expression {
   Expression left;
-  String operator;
-  Expression right;
+  String? operator;
+  Expression? right;
 
-  InfixExpression(Token token, this.operator, this.left) : super(token);
+  InfixExpression(Token? token, this.operator, this.left) : super(token);
 
   @override
   String toString() => '($left $operator $right)';
@@ -107,18 +108,18 @@ class InfixExpression extends Expression {
 class BooleanLiteral extends Expression {
   bool value;
 
-  BooleanLiteral(Token token, this.value) : super(token);
+  BooleanLiteral(Token? token, this.value) : super(token);
 
   @override
-  String toString() => token.literal;
+  String toString() => token!.literal!;
 }
 
 class IfExpression extends Expression {
-  Expression condition;
-  BlockStatement consequence;
-  BlockStatement alternative;
+  Expression? condition;
+  BlockStatement? consequence;
+  BlockStatement? alternative;
 
-  IfExpression(Token token) : super(token);
+  IfExpression(Token? token) : super(token);
 
   @override
   String toString() =>
@@ -128,68 +129,68 @@ class IfExpression extends Expression {
 class BlockStatement extends Statement {
   List<Statement> statements = [];
 
-  BlockStatement(Token token) : super(token);
+  BlockStatement(Token? token) : super(token);
 
   @override
   String toString() => statements.join();
 }
 
 class FunctionLiteral extends Expression {
-  List<Identifier> parameters = [];
-  BlockStatement body;
+  List<Identifier>? parameters = [];
+  BlockStatement? body;
 
-  FunctionLiteral(Token token) : super(token);
+  FunctionLiteral(Token? token) : super(token);
 
   @override
-  String toString() => '${tokenLiteral()}(${parameters.join(', ')})$body';
+  String toString() => '${tokenLiteral()}(${parameters!.join(', ')})$body';
 }
 
 class CallExpression extends Expression {
   Expression function;
-  List<Expression> arguments = [];
+  List<Expression?>? arguments = [];
 
-  CallExpression(Token token, this.function) : super(token);
+  CallExpression(Token? token, this.function) : super(token);
 
   @override
-  String toString() => '$function(${arguments.join(', ')})';
+  String toString() => '$function(${arguments!.join(', ')})';
 }
 
 class StringLiteral extends Expression {
-  final String value;
+  final String? value;
 
-  StringLiteral(Token token, this.value) : super(token);
+  StringLiteral(Token? token, this.value) : super(token);
 
   @override
-  String toString() => token.literal;
+  String toString() => token!.literal!;
 }
 
 class ArrayLiteral extends Expression {
-  List<Expression> elements;
+  List<Expression?>? elements;
 
-  ArrayLiteral(Token token, this.elements) : super(token);
+  ArrayLiteral(Token? token, this.elements) : super(token);
 
   @override
-  String toString() => '[${elements.join(', ')}]';
+  String toString() => '[${elements!.join(', ')}]';
 }
 
 class IndexExpression extends Expression {
-  Expression left;
-  Expression index;
+  Expression? left;
+  Expression? index;
 
-  IndexExpression(Token token) : super(token);
+  IndexExpression(Token? token) : super(token);
 
   @override
   String toString() => '($left[$index])';
 }
 
 class HashLiteral extends Expression {
-  Map<Expression, Expression> pairs = {};
+  Map<Expression?, Expression?> pairs = {};
 
-  HashLiteral(Token token) : super(token);
+  HashLiteral(Token? token) : super(token);
 
   @override
   String toString() {
-    List<String> items = [];
+    var items = <String>[];
     pairs.forEach((key, value) {
       items.add('$key:$value');
     });
